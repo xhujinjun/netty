@@ -54,6 +54,7 @@ public final class EchoServer {
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
+             //构建一个ReflectiveChannelFactory
              .channel(NioServerSocketChannel.class)
              .option(ChannelOption.SO_BACKLOG, 100)
              .handler(new LoggingHandler(LogLevel.INFO))
@@ -72,8 +73,12 @@ public final class EchoServer {
             // Start the server.
             ChannelFuture f = b.bind(PORT).sync();
 
+            // 到处已经开启来一个死循环来select感心兴趣的key了。
+            // 具体处理类在NioEventLoop
+
             // Wait until the server socket is closed.
             f.channel().closeFuture().sync();
+            System.out.println("xxx = ");
         } finally {
             // Shut down all event loops to terminate all threads.
             bossGroup.shutdownGracefully();

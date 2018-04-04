@@ -317,7 +317,12 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     final ChannelFuture initAndRegister() {
         Channel channel = null;
         try {
+            //1 构建channel
+            // 用ReflectiveChannelFactory来构建channel
+            //构建并配置 channel(socket)的过程参考NioServerSocketChannel
             channel = channelFactory.newChannel();
+            //2. 初始化channel
+            // 使用option/attr来初始化channel
             init(channel);
         } catch (Throwable t) {
             if (channel != null) {
@@ -329,7 +334,10 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
             // as the Channel is not registered yet we need to force the usage of the GlobalEventExecutor
             return new DefaultChannelPromise(new FailedChannel(), GlobalEventExecutor.INSTANCE).setFailure(t);
         }
-
+        //3 注册channel
+        // 采用EventExecutorChooser 向NioEventLoopGroup中选择一个EventLoop来注册channle
+        //并注册监听事件
+        // 首次开启线程来执行seletor
         ChannelFuture regFuture = config().group().register(channel);
         if (regFuture.cause() != null) {
             if (channel.isRegistered()) {

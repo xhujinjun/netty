@@ -30,10 +30,16 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public abstract class MultithreadEventExecutorGroup extends AbstractEventExecutorGroup {
 
+    /**
+     * 事件执行器（NioEventLoop）
+     */
     private final EventExecutor[] children;
     private final Set<EventExecutor> readonlyChildren;
     private final AtomicInteger terminatedChildren = new AtomicInteger();
     private final Promise<?> terminationFuture = new DefaultPromise(GlobalEventExecutor.INSTANCE);
+    /**
+     * EventExecutor选择器(EventGroup采用不同的算法来选择EventExecutor)
+     */
     private final EventExecutorChooserFactory.EventExecutorChooser chooser;
 
     /**
@@ -75,7 +81,7 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
         if (executor == null) {
             executor = new ThreadPerTaskExecutor(newDefaultThreadFactory());
         }
-
+        //构建一个nThreads长度的EventExecutor数组
         children = new EventExecutor[nThreads];
 
         for (int i = 0; i < nThreads; i ++) {

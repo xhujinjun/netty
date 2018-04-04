@@ -48,6 +48,11 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(NioServerSocketChannel.class);
 
+    /**
+     * 创建ServerSocketChannel
+     *
+     * 构建socket，创建一个socket描述符
+     */
     private static ServerSocketChannel newSocket(SelectorProvider provider) {
         try {
             /**
@@ -66,6 +71,7 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
     private final ServerSocketChannelConfig config;
 
     /**
+     * 该方法会被ReflectiveChannelFactory来调用
      * Create a new instance
      */
     public NioServerSocketChannel() {
@@ -83,7 +89,13 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
      * Create a new instance using the given {@link ServerSocketChannel}.
      */
     public NioServerSocketChannel(ServerSocketChannel channel) {
+        //id = newId();
+//        unsafe = newUnsafe();
+//        pipeline = newChannelPipeline()
+        // SelectionKey.OP_ACCEP
+        //非阻塞套接字
         super(null, channel, SelectionKey.OP_ACCEPT);
+        //配置NioServerSocketChannel
         config = new NioServerSocketChannelConfig(this, javaChannel().socket());
     }
 

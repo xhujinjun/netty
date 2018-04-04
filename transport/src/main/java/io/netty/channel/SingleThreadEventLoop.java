@@ -31,7 +31,9 @@ import java.util.concurrent.ThreadFactory;
  *
  */
 public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor implements EventLoop {
-
+    /**
+     * 缺省最大的任务等待队列长度
+     */
     protected static final int DEFAULT_MAX_PENDING_TASKS = Math.max(16,
             SystemPropertyUtil.getInt("io.netty.eventLoop.maxPendingTasks", Integer.MAX_VALUE));
 
