@@ -319,7 +319,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         try {
             //1 构建channel
             // 用ReflectiveChannelFactory来构建channel
-            //构建并配置 channel(socket)的过程参考NioServerSocketChannel
+            //构建并配置 channel(socket)的过程参考 NioServerSocketChannel
             channel = channelFactory.newChannel();
             //2. 初始化channel
             // 使用option/attr来初始化channel
