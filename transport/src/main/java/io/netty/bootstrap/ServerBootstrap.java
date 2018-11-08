@@ -37,6 +37,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * 服务端启动累
+ *
  * {@link Bootstrap} sub-class which allows easy bootstrap of {@link ServerChannel}
  *
  */
@@ -47,7 +49,13 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
     private final Map<ChannelOption<?>, Object> childOptions = new LinkedHashMap<ChannelOption<?>, Object>();
     private final Map<AttributeKey<?>, Object> childAttrs = new LinkedHashMap<AttributeKey<?>, Object>();
     private final ServerBootstrapConfig config = new ServerBootstrapConfig(this);
+    /**
+     * 工作线程组
+     */
     private volatile EventLoopGroup childGroup;
+    /**
+     * 工作线程的channel处理器
+     */
     private volatile ChannelHandler childHandler;
 
     public ServerBootstrap() { }
@@ -139,11 +147,14 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
 
     @Override
     void init(Channel channel) throws Exception {
+        //1. 获取ChannelOption来设置channel config
         final Map<ChannelOption<?>, Object> options = options0();
+        //使用ChannelOption来配置ChannelConfig
         synchronized (options) {
             setChannelOptions(channel, options, logger);
         }
 
+        //2. 设置新接入channel的attr
         final Map<AttributeKey<?>, Object> attrs = attrs0();
         synchronized (attrs) {
             for (Entry<AttributeKey<?>, Object> e: attrs.entrySet()) {
@@ -165,7 +176,10 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
         synchronized (childAttrs) {
             currentChildAttrs = childAttrs.entrySet().toArray(newAttrArray(childAttrs.size()));
         }
-
+        /*
+        p.addLast()向serverChannel的流水线处理器中加入了一个 ServerBootstrapAcceptor，
+        从名字上就可以看出来，这是一个接入器，专门接受新请求，把新的请求扔给某个事件循环器
+        */
         p.addLast(new ChannelInitializer<Channel>() {
             @Override
             public void initChannel(final Channel ch) throws Exception {
@@ -209,6 +223,9 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
         return new Map.Entry[size];
     }
 
+    /**
+     * 服务器启动接收器
+     */
     private static class ServerBootstrapAcceptor extends ChannelInboundHandlerAdapter {
 
         private final EventLoopGroup childGroup;

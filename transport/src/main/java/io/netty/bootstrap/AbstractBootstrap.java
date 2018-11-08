@@ -53,6 +53,9 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     @SuppressWarnings("deprecation")
     private volatile ChannelFactory<? extends C> channelFactory;
     private volatile SocketAddress localAddress;
+    /**
+     * ChannelOption 用来配置ChannelConfig
+     */
     private final Map<ChannelOption<?>, Object> options = new LinkedHashMap<ChannelOption<?>, Object>();
     private final Map<AttributeKey<?>, Object> attrs = new LinkedHashMap<AttributeKey<?>, Object>();
     private volatile ChannelHandler handler;
@@ -250,6 +253,8 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
      * Create a new {@link Channel} and bind it.
      */
     public ChannelFuture bind(int inetPort) {
+        //1. new InetSocketAddress(inetPort): 创建一个socket地址(IP: the wildcard address, port: inetPort)
+        //2. bind: 创建socketChannel来绑定该地址
         return bind(new InetSocketAddress(inetPort));
     }
 
@@ -279,18 +284,22 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     }
 
     private ChannelFuture doBind(final SocketAddress localAddress) {
+        //1. 创建,初始化并注册Channel 返回获取ChannelFuture
         final ChannelFuture regFuture = initAndRegister();
         final Channel channel = regFuture.channel();
+        //2. 如果IO超时失败即注册channel失败
         if (regFuture.cause() != null) {
             return regFuture;
         }
-
+        //3. 如果initAndRegister执行完毕则绑定套接字
         if (regFuture.isDone()) {
             // At this point we know that the registration was complete and successful.
             ChannelPromise promise = channel.newPromise();
             doBind0(regFuture, channel, localAddress, promise);
             return promise;
-        } else {
+        }
+        //4.如果initAndRegister没执行完毕 就添加一个ChannelFutureListener监听，当initAndRegister执行完成时，调用operationComplete方法并执行doBind0进行socket绑定。
+        else {
             // Registration future is almost always fulfilled already, but just in case it's not.
             final PendingRegistrationPromise promise = new PendingRegistrationPromise(channel);
             regFuture.addListener(new ChannelFutureListener() {
@@ -314,15 +323,27 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         }
     }
 
+    /**
+     * 1. 构建Channel
+     * 2. 初始化Channel
+     * 3. 注册Channel
+     * 4. 返回注册结果ChannelFuture
+     */
     final ChannelFuture initAndRegister() {
         Channel channel = null;
         try {
-            //1 构建channel
-            // 用ReflectiveChannelFactory来构建channel
-            //构建并配置 channel(socket)的过程参考 NioServerSocketChannel
+            //1. 构建channel
+            //  用ReflectiveChannelFactory来构建NioServerSocketChannel
+            //  NioServerSocketChannel实例化中创建ServerSocketChannel, 配置// id： DefaultChannelId.newInstance()
+            //         // unsafe = newUnsafe();
+            //         // pipeline = DefaultChannelPipeline
+            //         // SelectionKey.OP_ACCEP
+            //         // 设置非阻塞套接字
+            //  构建并配置 NioServerSocketChannel(创建SocketChannelImpl, 设置config属性，设置SelectionKey.OP_ACCEPT事件，设置unsafe属性， 设置pipeline属性)
             channel = channelFactory.newChannel();
             //2. 初始化channel
             // 使用option/attr来初始化channel
+            // pipeline
             init(channel);
         } catch (Throwable t) {
             if (channel != null) {
@@ -334,9 +355,13 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
             // as the Channel is not registered yet we need to force the usage of the GlobalEventExecutor
             return new DefaultChannelPromise(new FailedChannel(), GlobalEventExecutor.INSTANCE).setFailure(t);
         }
-        //3 注册channel
-        // 采用EventExecutorChooser 向NioEventLoopGroup中选择一个EventLoop来注册channle
-        //并注册监听事件
+
+        //3. 注册channel
+        //  config(): ServerBootstrap配置类
+        //  group(): 请求线程
+        //  register():
+        // 采用EventExecutorChooser (PowerOfTwoEventExecutorChooser/ GenericEventExecutorChooser) 向NioEventLoopGroup中选择一个EventLoop来注册channel
+        // 并注册监听事件
         // 首次开启线程来执行seletor
         ChannelFuture regFuture = config().group().register(channel);
         if (regFuture.cause() != null) {

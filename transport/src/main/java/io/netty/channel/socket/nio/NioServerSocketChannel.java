@@ -41,7 +41,7 @@ import java.util.List;
  * NIO selector based implementation to accept new connections.
  */
 public class NioServerSocketChannel extends AbstractNioMessageChannel
-                             implements io.netty.channel.socket.ServerSocketChannel {
+        implements io.netty.channel.socket.ServerSocketChannel {
 
     private static final ChannelMetadata METADATA = new ChannelMetadata(false, 16);
     private static final SelectorProvider DEFAULT_SELECTOR_PROVIDER = SelectorProvider.provider();
@@ -50,7 +50,7 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
 
     /**
      * 创建ServerSocketChannel
-     *
+     * <p>
      * 构建socket，创建一个socket描述符
      */
     private static ServerSocketChannel newSocket(SelectorProvider provider) {
@@ -71,8 +71,8 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
     private final ServerSocketChannelConfig config;
 
     /**
+     * 创建一个NioServerSocketChannel
      * 该方法会被ReflectiveChannelFactory来调用
-     * Create a new instance
      */
     public NioServerSocketChannel() {
         this(newSocket(DEFAULT_SELECTOR_PROVIDER));
@@ -89,11 +89,11 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
      * Create a new instance using the given {@link ServerSocketChannel}.
      */
     public NioServerSocketChannel(ServerSocketChannel channel) {
-        //id = newId();
-//        unsafe = newUnsafe();
-//        pipeline = newChannelPipeline()
+        // id： DefaultChannelId.newInstance()
+        // unsafe = newUnsafe();
+        // pipeline = DefaultChannelPipeline
         // SelectionKey.OP_ACCEP
-        //非阻塞套接字
+        // 设置非阻塞套接字
         super(null, channel, SelectionKey.OP_ACCEPT);
         //配置NioServerSocketChannel
         config = new NioServerSocketChannelConfig(this, javaChannel().socket());

@@ -29,6 +29,7 @@ import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
+import io.netty.util.AttributeKey;
 
 /**
  * Echoes back any received data from a client.
@@ -53,11 +54,19 @@ public final class EchoServer {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
             ServerBootstrap b = new ServerBootstrap();
-            b.group(bossGroup, workerGroup)
+
+            b
+            //线程模型
+             .group(bossGroup, workerGroup)
              //构建一个ReflectiveChannelFactory
              .channel(NioServerSocketChannel.class)
+             //配置channel属性
              .option(ChannelOption.SO_BACKLOG, 100)
+             //channel处理器(用来处理请求)）
              .handler(new LoggingHandler(LogLevel.INFO))
+            // ?
+             .attr(AttributeKey.newInstance(""), "s")
+             //？
              .childHandler(new ChannelInitializer<SocketChannel>() {
                  @Override
                  public void initChannel(SocketChannel ch) throws Exception {
@@ -65,12 +74,12 @@ public final class EchoServer {
                      if (sslCtx != null) {
                          p.addLast(sslCtx.newHandler(ch.alloc()));
                      }
-                     //p.addLast(new LoggingHandler(LogLevel.INFO));
+                     p.addLast(new LoggingHandler(LogLevel.INFO));
                      p.addLast(new EchoServerHandler());
                  }
              });
 
-            // Start the server.
+            // 使用ServerBootstrap绑定端口并启动服务
             ChannelFuture f = b.bind(PORT).sync();
 
             // 到处已经开启来一个死循环来select感心兴趣的key了。
