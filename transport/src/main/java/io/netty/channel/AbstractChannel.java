@@ -463,16 +463,19 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
             if (eventLoop == null) {
                 throw new NullPointerException("eventLoop");
             }
-            ////判断该channel是否已经被注册到EventLoop中
+            //判断该channel是否已经被注册到EventLoop中
             if (isRegistered()) {
                 promise.setFailure(new IllegalStateException("registered to an event loop already"));
                 return;
             }
+            //判断是否兼容
             if (!isCompatible(eventLoop)) {
                 promise.setFailure(
                         new IllegalStateException("incompatible event loop type: " + eventLoop.getClass().getName()));
                 return;
             }
+
+
             //1 将eventLoop设置在NioServerSocketChannel上
             AbstractChannel.this.eventLoop = eventLoop;
 
@@ -505,7 +508,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                     return;
                 }
                 boolean firstRegistration = neverRegistered;
-                //注册监听事件
+                //1. 注册监听事件
                 doRegister();
                 neverRegistered = false;
                 registered = true;
@@ -515,6 +518,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                 pipeline.invokeHandlerAddedIfNeeded();
 
                 safeSetSuccess(promise);
+
                 //触发channel注册成功事件
                 pipeline.fireChannelRegistered();
                 // Only fire a channelActive if the channel has never been registered. This prevents firing

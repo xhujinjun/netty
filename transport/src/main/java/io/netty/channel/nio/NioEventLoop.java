@@ -56,8 +56,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public final class NioEventLoop extends SingleThreadEventLoop {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(NioEventLoop.class);
-
-    private static final int CLEANUP_INTERVAL = 256; // XXX Hard-coded value, but won't need customization.
+    // XXX Hard-coded value, but won't need customization.
+    private static final int CLEANUP_INTERVAL = 256;
 
     private static final boolean DISABLE_KEYSET_OPTIMIZATION =
             SystemPropertyUtil.getBoolean("io.netty.noKeySetOptimization", false);
@@ -154,6 +154,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             throw new NullPointerException("selectStrategy");
         }
         provider = selectorProvider;
+        //打开selector
         final SelectorTuple selectorTuple = openSelector();
         selector = selectorTuple.selector;
         unwrappedSelector = selectorTuple.unwrappedSelector;
@@ -355,6 +356,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         }
 
         try {
+            //打开selector
             newSelectorTuple = openSelector();
         } catch (Exception e) {
             logger.warn("Failed to create a new Selector.", e);
@@ -406,14 +408,21 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         logger.info("Migrated " + nChannels + " channel(s) to the new Selector.");
     }
 
+    /**
+     * 真正执行Selector
+     */
     @Override
     protected void run() {
         for (;;) {
             try {
+                //策略
                 switch (selectStrategy.calculateStrategy(selectNowSupplier, hasTasks())) {
+                    // Indicates the IO loop should be retried, no blocking select to follow directly.
                     case SelectStrategy.CONTINUE:
                         continue;
+                    //Indicates a blocking select should follow
                     case SelectStrategy.SELECT:
+                        //先select以下
                         select(wakenUp.getAndSet(false));
 
                         // 'wakenUp.compareAndSet(false, true)' is always evaluated
@@ -453,7 +462,10 @@ public final class NioEventLoop extends SingleThreadEventLoop {
 
                 cancelledKeys = 0;
                 needsToSelectAgain = false;
+                //IO和非IO任务的比重(IO/非IO)
                 final int ioRatio = this.ioRatio;
+
+                //如果全部都是IO操作
                 if (ioRatio == 100) {
                     try {
                         processSelectedKeys();
@@ -461,7 +473,9 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                         // Ensure we always run tasks.
                         runAllTasks();
                     }
-                } else {
+                }
+                //如果部分是IO,部分是非IO操作
+                else {
                     final long ioStartTime = System.nanoTime();
                     try {
                         processSelectedKeys();
@@ -603,6 +617,9 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         }
     }
 
+    /**
+     * 处理Selector查询出来的SelectedKey
+     */
     private void processSelectedKey(SelectionKey k, AbstractNioChannel ch) {
         final AbstractNioChannel.NioUnsafe unsafe = ch.unsafe();
         if (!k.isValid()) {
@@ -649,6 +666,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
 
             // Also check for readOps of 0 to workaround possible JDK bug which may otherwise lead
             // to a spin loop
+            //解决JDK CPU
             if ((readyOps & (SelectionKey.OP_READ | SelectionKey.OP_ACCEPT)) != 0 || readyOps == 0) {
                 unsafe.read();
             }

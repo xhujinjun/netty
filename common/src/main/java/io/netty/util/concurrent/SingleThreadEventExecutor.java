@@ -755,6 +755,9 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         return isTerminated();
     }
 
+    /**
+     * 真正执行selector
+     */
     @Override
     public void execute(Runnable task) {
         if (task == null) {

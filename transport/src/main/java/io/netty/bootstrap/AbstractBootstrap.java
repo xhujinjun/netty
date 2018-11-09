@@ -332,18 +332,19 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     final ChannelFuture initAndRegister() {
         Channel channel = null;
         try {
-            //1. 构建channel
-            //  用ReflectiveChannelFactory来构建NioServerSocketChannel
-            //  NioServerSocketChannel实例化中创建ServerSocketChannel, 配置// id： DefaultChannelId.newInstance()
-            //         // unsafe = newUnsafe();
-            //         // pipeline = DefaultChannelPipeline
-            //         // SelectionKey.OP_ACCEP
-            //         // 设置非阻塞套接字
-            //  构建并配置 NioServerSocketChannel(创建SocketChannelImpl, 设置config属性，设置SelectionKey.OP_ACCEPT事件，设置unsafe属性， 设置pipeline属性)
+            //1. 构建NioServerSocketChannel
+            //  用ReflectiveChannelFactory来调用NioServerSocketChannel的构造函数
+            //  创建ServerSocketChannel并设置为非阻塞IO
+            //  构造并初始化NioServerSocketChannel(
+            //       id:DefaultChannelId.newInstance,
+            //       unsafe: AbstractNioMessageChannel. NioMessageUnsafe
+            //       pipeline: DefaultChannelPipeline
+            //       SelectionKey.OP_ACCEP)
             channel = channelFactory.newChannel();
+
             //2. 初始化channel
-            // 使用option/attr来初始化channel
-            // pipeline
+            //    使用option/attr来初始化channel
+            //    往pipeline注册ChannelInitializer
             init(channel);
         } catch (Throwable t) {
             if (channel != null) {

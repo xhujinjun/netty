@@ -50,7 +50,7 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
 
     /**
      * 创建ServerSocketChannel
-     * <p>
+     *
      * 构建socket，创建一个socket描述符
      */
     private static ServerSocketChannel newSocket(SelectorProvider provider) {
@@ -90,8 +90,8 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
      */
     public NioServerSocketChannel(ServerSocketChannel channel) {
         // id： DefaultChannelId.newInstance()
-        // unsafe = newUnsafe();
-        // pipeline = DefaultChannelPipeline
+        // unsafe: AbstractNioMessageChannel. NioMessageUnsafe
+        // pipeline: DefaultChannelPipeline
         // SelectionKey.OP_ACCEP
         // 设置非阻塞套接字
         super(null, channel, SelectionKey.OP_ACCEPT);

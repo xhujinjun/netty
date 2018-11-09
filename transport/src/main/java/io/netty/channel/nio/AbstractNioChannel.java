@@ -386,7 +386,7 @@ public abstract class AbstractNioChannel extends AbstractChannel {
         boolean selected = false;
         for (;;) {
             try {
-                //ServerSocketChannel注册到Selector中。
+                //ServerSocketChannel注册到Selector中，及感兴趣的事件
                 selectionKey = javaChannel().register(eventLoop().unwrappedSelector(), 0, this);
                 return;
             } catch (CancelledKeyException e) {
