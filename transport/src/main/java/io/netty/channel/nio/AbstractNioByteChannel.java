@@ -128,6 +128,10 @@ public abstract class AbstractNioByteChannel extends AbstractNioChannel {
             }
         }
 
+        /**
+         * 读数据到缓冲区，并触发channelRead事件
+         * 数据读完后，触发channelReadComplete事件
+         */
         @Override
         public final void read() {
             final ChannelConfig config = config();

@@ -935,7 +935,11 @@ public class DefaultChannelPipeline implements ChannelPipeline {
             inEventLoop = false;
         }
     }
+    // -- 触发事件
 
+    /**
+     * 触发通道激活事件
+     */
     @Override
     public final ChannelPipeline fireChannelActive() {
         AbstractChannelHandlerContext.invokeChannelActive(head);
@@ -1265,6 +1269,10 @@ public class DefaultChannelPipeline implements ChannelPipeline {
     }
 
     // A special catch-all handler that handles both bytes and messages.
+
+    /**
+     * 尾上下文
+     */
     final class TailContext extends AbstractChannelHandlerContext implements ChannelInboundHandler {
 
         TailContext(DefaultChannelPipeline pipeline) {
@@ -1325,6 +1333,9 @@ public class DefaultChannelPipeline implements ChannelPipeline {
         }
     }
 
+    /**
+     * 头上下文
+     */
     final class HeadContext extends AbstractChannelHandlerContext
             implements ChannelOutboundHandler, ChannelInboundHandler {
 
@@ -1351,6 +1362,9 @@ public class DefaultChannelPipeline implements ChannelPipeline {
             // NOOP
         }
 
+        /**
+         * 真实绑定
+         */
         @Override
         public void bind(
                 ChannelHandlerContext ctx, SocketAddress localAddress, ChannelPromise promise)
@@ -1358,6 +1372,9 @@ public class DefaultChannelPipeline implements ChannelPipeline {
             unsafe.bind(localAddress, promise);
         }
 
+        /**
+         * 真实连接
+         */
         @Override
         public void connect(
                 ChannelHandlerContext ctx,

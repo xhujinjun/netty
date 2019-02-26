@@ -16,6 +16,7 @@
 package io.netty.channel;
 
 /**
+ * 通道入站处理器（IO被动处理）
  * {@link ChannelHandler} which adds callbacks for state changes. This allows the user
  * to hook in to state changes easily.
  */

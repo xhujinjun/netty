@@ -82,7 +82,7 @@ public final class EchoServer {
             // 使用ServerBootstrap绑定端口并启动服务
             ChannelFuture f = b.bind(PORT).sync();
 
-            // 到处已经开启来一个死循环来select感心兴趣的key了。
+            // 到此已经开启来一个死循环来select感心兴趣的key了。
             // 具体处理类在NioEventLoop
 
             // Wait until the server socket is closed.

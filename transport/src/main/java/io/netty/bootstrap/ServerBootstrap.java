@@ -37,7 +37,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 服务端启动累
+ * 服务端启动类
  *
  * {@link Bootstrap} sub-class which allows easy bootstrap of {@link ServerChannel}
  *
